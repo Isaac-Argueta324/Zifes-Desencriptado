@@ -1,27 +1,39 @@
-use std::{fs::*};
+use std::{fs::*, io};
 use std::os::windows::fs::FileExt;
 use std::mem;
+use sha256::*;
 fn main() {
-    let archivo_bytes= read("Archivo3.encriptado");
+    let archivo_bytes= read("archivo3.encriptado");
     match archivo_bytes {
         Err(pq)=>{
             println!("error al cargar el archivo {}", pq);
         }
         Ok(archivo)=>{
             let mut indice_de_bytes:u64=0;
-            let  archivo_desencriptado= match File::create("archivo.jfif") {
+            let  archivo_desencriptado= match File::create("resultado.txt") {
                 Err(pq)=> panic!("Error al escribir el archivo debido a {}", pq ),
                 Ok(nuevoarchivo)=> nuevoarchivo
             };
             let mut archivo_arreglado:Vec<u8>= Vec::new();
-            let contrasena:[u8; 10]=[8;10];
-            let mut contrasena_indice= 0;
+            let mut contrasena_usuario= String::new();
+            println!("Hola usuario introduce tu contasena");
+            match io::stdin().read_line(&mut contrasena_usuario){
+                Ok(_todo_bien)=>{
+
+                }
+                Err(_error)=>{
+                    panic!("Hubo un error al leer tu contrasena ):");
+                }
+            }
+
             for i in 0..archivo.len()/2 {
                 unsafe{
                     let indice=i*2;
                     let arreglo:[u8; 2]= [archivo[indice+1], archivo[indice]];
                     let mut nuevo_dato= mem::transmute::<[u8;2], u16>(arreglo);
-                    match contrasena[contrasena_indice]  {
+                    print!("{}", nuevo_dato);
+                    let contrasena_numero= numeros_aleaatorios(&mut contrasena_usuario);
+                    match  contrasena_numero {
                         1=>{
                             nuevo_dato-=27;
                         }
@@ -62,10 +74,6 @@ fn main() {
     
                         }
                     }
-                    contrasena_indice+=1;
-                    if contrasena_indice==10 {
-                        contrasena_indice=0;
-                    }
                     let guardar= mem::transmute::<u16, [u8;2]>(nuevo_dato);
                     archivo_arreglado.push(guardar[0]);
                 }
@@ -78,4 +86,16 @@ fn main() {
 
         }
     }
+}
+
+fn numeros_aleaatorios(contraesena: &mut String) -> u8{
+    
+    let nueva_contrasena=digest(contraesena.as_str());
+    contraesena.clear();
+    contraesena.push_str(&nueva_contrasena);
+    let indice= contraesena.len()-1;
+    let valor_pseudoaleatorio= nueva_contrasena.as_bytes();
+    let mut retorno= valor_pseudoaleatorio[indice];
+    retorno=retorno%10;
+    return retorno;
 }
