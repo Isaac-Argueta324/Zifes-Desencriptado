@@ -3,6 +3,7 @@ use std::os::windows::fs::FileExt;
 use std::mem;
 use sha256::*;
 use std::io::*;
+use std::time::Instant;
 fn main() {
     
     //se lee el nombre del archivo que el usuario desea desencriptar
@@ -26,7 +27,7 @@ fn main() {
     let archivo_bytes= read(nombre_archivo_a_desencriptar);
     match archivo_bytes {
         Err(pq)=>{
-            println!("error al cargar el archivo {}", pq);
+            println!("Error al cargar el archivo {}", pq);
         }
         Ok(archivo)=>{
 
@@ -54,6 +55,7 @@ fn main() {
             contrasena_usuario.pop();
             contrasena_usuario.pop();
 
+            let tiempo= Instant::now();
             //Empieza el ciclo de encriptado, este se iterará una cantidad de veces igual a la mitad del tamaño del archivo a encriptar en bytes
 
             for i in 0..archivo.len()/2 {
@@ -111,6 +113,7 @@ fn main() {
                     indice_de_bytes+=1;
                 }
             }
+            println!("Desencriptado exitoso tiempo de desencriptado: {} segundos", tiempo.elapsed().as_secs());
         }
     }
 }
